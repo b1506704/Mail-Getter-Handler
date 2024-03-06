@@ -28,7 +28,11 @@ namespace MailProcessingFunc
             };
 
             string emailBodyContent = await new StreamReader(req.Body).ReadToEndAsync();
-            var prompt = JsonConvert.DeserializeObject<InputDto>(emailBodyContent, jsonSerializerSettings);
+
+            var prompt = new InputDto()
+            {
+                Prompt = emailBodyContent
+            };
             //// Replace HTML with other characters
             //string updatedBody = Regex.Replace(emailBodyContent, "<.*?>", string.Empty);
             //updatedBody = updatedBody.Replace("\\r\\n", " ");
