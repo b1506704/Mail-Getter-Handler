@@ -18,8 +18,8 @@ namespace MailProcessingFunc
 
             if (files.Count > 0)
             {
-                //var url = "https://flask-endpoint.azurewebsites.net/api/upload-file";
-                var url = "http://127.0.0.1:5000/api/upload-file";
+                var url = "https://flask-endpoint.azurewebsites.net/api/upload-file";
+                //var url = "http://127.0.0.1:5000/api/upload-file";
                 var streamContent = new StreamContent(files[0].OpenReadStream());
 
                 var multiContent = new MultipartFormDataContent
