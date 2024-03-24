@@ -1,5 +1,7 @@
+﻿using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -8,18 +10,17 @@ using Newtonsoft.Json.Serialization;
 using System.IO;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
 namespace MailProcessingFunc
 {
-    public static class MailProcessingHandler
-    {
-        [FunctionName("MailProcessingHandler")]
+	public class FileProcessingHandler
+	{
+        [FunctionName("FileProcessingHandler")]
         public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
-            log.LogInformation("HttpWebhook triggered");
+            log.LogInformation("C# HTTP trigger function processed a request.");
 
             var jsonSerializerSettings = new JsonSerializerSettings()
             {
@@ -28,13 +29,20 @@ namespace MailProcessingFunc
                     NamingStrategy = new CamelCaseNamingStrategy()
                 }
             };
+            var files = req.Form.Files;
+            string requestBody ="";
+            if (files.Count > 0)
+            {
+                var result = new StringBuilder();
+                using (var reader = new StreamReader(files[0].OpenReadStream()))
+                {
+                    while (reader.Peek() >= 0)
+                        result.AppendLine(await reader.ReadLineAsync());
+                }
+                requestBody = result.ToString();
+            }
 
-            string emailBodyContent = await new StreamReader(req.Body).ReadToEndAsync();
-            //string updatedBody = Regex.Replace(emailBodyContent, "<.*?>", string.Empty);
-            //updatedBody = updatedBody.Replace("\\r\\n", " ");
-            //updatedBody = updatedBody.Replace(@"&nbsp;", " ");
-
-            var updatedBody = HttpUtility.HtmlDecode(emailBodyContent);
+            var updatedBody = HttpUtility.HtmlDecode(requestBody);
             updatedBody = updatedBody.Replace("\r\n", " ");
             updatedBody = updatedBody.Replace("\n", " ");
 
@@ -58,6 +66,6 @@ namespace MailProcessingFunc
             var responseMessage = await response.Content.ReadAsStringAsync();
             return new OkObjectResult(responseMessage);
         }
-
     }
 }
+
